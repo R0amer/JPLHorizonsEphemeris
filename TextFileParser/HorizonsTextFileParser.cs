@@ -12,11 +12,6 @@ namespace TextFileParser
         public int StartTokenLine { get; set; }
         public int EndTokenLine { get; set; }
 
-        //public override string ToString()
-        //{
-        //    return $"Start Token: {StartTokenLine}\n" +
-        //        $"End Token: {EndTokenLine}";
-        //}
     }
     class EphemInformation
     {
@@ -104,7 +99,7 @@ namespace TextFileParser
                             RadiusAU = radiusAU,
                         });
                         //Console.WriteLine($"Current Entries in EphemInfo: {EphemInfo.Count}");
-                        if (EphemInfo.Count == 97) // Horizon's Ephemeris output for 24hrs at 15m intervals is always 97 lines including 00:00 the next day.
+                        if (EphemInfo.Count == 96) // Horizon's Ephemeris output for 24hrs at 15m intervals is always 96 lines not including 00:00 the next day.
                         {
                             var FormattedJSON = new JsonSerializerOptions { WriteIndented = true };
                             string FormattedEphemInfo = JsonSerializer.Serialize(EphemInfo, FormattedJSON);
