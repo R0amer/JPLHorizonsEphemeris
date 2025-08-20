@@ -7,28 +7,36 @@ using System.Threading.Tasks;
 
 namespace HorizonsAutoCommiter
 {
-    class AutoCommit
+    public class AutoCommit
     {
-        public static string GitHubPAT = Environment.GetEnvironmentVariable("HorizonsAccessToken");
+        //public static string GitHubPAT = Environment.GetEnvironmentVariable("HorizonsAccessToken");
+        //private static string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        //private static string JSONFilePath = Path.Combine(LocalAppData, "HorizonsRequestor", "JSONs");
 
-        static async Task Main()
+        //static async Task Main()
+        //{
+        //    await GitHubUpload();
+        //}
+
+        public static async Task Run()
         {
             await GitHubUpload();
         }
 
         public static async Task GitHubUpload()
         {
+            string GitHubPAT = Environment.GetEnvironmentVariable("HorizonsAccessToken");
+            string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string JSONFilePath = Path.Combine(LocalAppData, "HorizonsRequestor", "JSONs");
 
             var GitHubClient = new GitHubClient(new ProductHeaderValue("HorizonsAutoCommitter"));
             GitHubClient.Credentials = new Credentials(GitHubPAT);
-            string JSONFilePath = @"C:\Users\Kaldr\Desktop\TemporaryOutputFolder\JSONs\";
+            //string JSONFilePath = @"C:\Program Files\HorizonsRequestor\JSONs\";
             string[] NewPlanetFiles = Directory.GetFiles(JSONFilePath).Select(Path.GetFileName).ToArray();
             string HorizonsDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)).ToString("yyyy-MM-dd");
 
             var Owner = "R0amer";
             var RepoName = "JPLHorizonsEphemeris";
-            var ExistCheckPath = "JSONs/";
-
 
             try
             {
