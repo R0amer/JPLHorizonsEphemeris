@@ -10,31 +10,93 @@ using static System.Net.WebRequestMethods;
 
 namespace HorizonsAutoRequestor
 {
-    class APIrequest
+    public class APIrequest
     {
-        private static int Command = 000;
         private static string StartTime = DateOnly.FromDateTime(DateTime.Today.AddDays(1)).ToString("yyyy-MM-dd");
         private static string StopTime = DateOnly.FromDateTime(DateTime.Today.AddDays(2)).ToString("yyyy-MM-dd");
-        static private string EphemStorage = @"C:\Users\Kaldr\Desktop\TemporaryOutputFolder";
+        private static string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        private static string EphemStorage = Path.Combine(LocalAppData, "HorizonsRequestor", "Ephemeris");
         private static HttpClient HorizonClient = null;
 
-        public static Dictionary<int, string> PlanetEphemID = new Dictionary<int, string>()
+        public static void Run()
         {
-            {199, "Mercury"},
-            {299, "Venus"},
-            {399, "Earth"},
-            {499, "Mars"},
-            {599, "Jupiter"},
-            {699, "Saturn"},
-            {799, "Uranus"},
-            {899, "Neptune"},
-        };
-
-        static void Main()
-        {
-            CheckForEphemFiles();
+            TxtToDictionary();
         }
 
+        public static void TxtToDictionary()
+        {
+            Dictionary<string, string> PlanetEphemID = new Dictionary<string, string>();
+
+            string TxtPath = Path.Combine(LocalAppData, "HorizonsRequestor" + Path.DirectorySeparatorChar + "IDs_Planets.txt");
+
+            try
+            {
+                string[] lines = System.IO.File.ReadAllLines(TxtPath);
+
+                foreach (string line in lines)
+                {
+                    if (string.IsNullOrEmpty(line) || line.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
+                    string[] parts = line.Split(':');
+
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0].Trim();
+                        string value = parts[1].Trim();
+
+                        if (!PlanetEphemID.ContainsKey(key))
+                        {
+                            PlanetEphemID.Add(key, value);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Duplicate key {key} found!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Bad entry format: {line}");
+                    }
+                }
+            }
+
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine($"File not found at {TxtPath}, did you move it?");
+            }
+
+            CheckForEphemFiles(PlanetEphemID);
+        }
+
+        static private void CheckForEphemFiles(Dictionary<string, string> PlanetEphemID)
+        {
+            Directory.CreateDirectory(EphemStorage);
+            string PlanetName;
+            int PlanetCode;
+
+            foreach (KeyValuePair<string, string> PlanetEphemCombo in PlanetEphemID)        
+            {
+
+                PlanetName = PlanetEphemCombo.Value;
+                int KeyToInt = int.Parse(PlanetEphemCombo.Key);
+                PlanetCode = KeyToInt;
+
+                if (System.IO.File.Exists(Path.Combine(EphemStorage, PlanetName + ".txt")))
+                {
+                    Console.WriteLine("File For: " + PlanetName + " exists. Overwriting...");
+                    HTTPRequest(PlanetCode, PlanetName, APIrequest.StartTime, APIrequest.StopTime);
+                }
+                else
+                {
+                    //using StreamWriter sw = new StreamWriter(Path.Combine(EphemStorage, PlanetName + "_EPHEM.txt"));
+                    Console.WriteLine("File for: " + PlanetName + " does not exist. Creating...");
+                    HTTPRequest(PlanetCode, PlanetName, APIrequest.StartTime, APIrequest.StopTime);
+                }
+            }
+        }
         static async void HTTPRequest(int Command, string PlanetName, string StartTime, string StopTime)
         {
             string APIURL = "https://ssd.jpl.nasa.gov/api/horizons.api";
@@ -47,7 +109,7 @@ namespace HorizonsAutoRequestor
 
             Console.WriteLine("Sending GET Request to JPL Horizon for: " + PlanetName);
 
-            if(HorizonClient == null)
+            if (HorizonClient == null)
             {
                 HttpClientHandler HorizonHandler = new HttpClientHandler()
                 {
@@ -65,31 +127,6 @@ namespace HorizonsAutoRequestor
             await System.IO.File.WriteAllTextAsync(FullFilePath, HorizonResponseBody);
 
             Console.WriteLine("GET Request for " + PlanetName + " successful!");
-        }
-
-        static private void CheckForEphemFiles()
-        {
-            string PlanetName;
-            int PlanetCode;
-
-            foreach (KeyValuePair<int, string> PlanetEphemCombo in PlanetEphemID)        
-            {
-
-                PlanetName = PlanetEphemCombo.Value;
-                PlanetCode = PlanetEphemCombo.Key;
-
-                if (System.IO.File.Exists(Path.Combine(EphemStorage, PlanetName + ".txt")))
-                {
-                    Console.WriteLine("File For: " + PlanetName + " exists. Overwriting...");
-                    HTTPRequest(PlanetCode, PlanetName, APIrequest.StartTime, APIrequest.StopTime);
-                }
-                else
-                {
-                    //using StreamWriter sw = new StreamWriter(Path.Combine(EphemStorage, PlanetName + "_EPHEM.txt"));
-                    Console.WriteLine("File for: " + PlanetName + " does not exist. Creating...");
-                    HTTPRequest(PlanetCode, PlanetName, APIrequest.StartTime, APIrequest.StopTime);
-                }
-            }
         }
     }
 }
