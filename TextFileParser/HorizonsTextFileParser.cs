@@ -7,12 +7,6 @@ using System.Text.Json;
 
 namespace TextFileParser
 {
-    class BoundaryTokens
-    {
-        public int StartTokenLine { get; set; }
-        public int EndTokenLine { get; set; }
-
-    }
     class EphemInformation
     {
         public string Date {  get; set; }
@@ -24,34 +18,31 @@ namespace TextFileParser
         public float RadiusAU { get; set; }
 
     }
-    class TextFileParser
+    public class Parser
     {
         public static void Main()
         {            
-            Parse();
+
         }
 
         public static void Parse()
-        {            
+        {
+            string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string JSONFilePath = Path.Combine(LocalAppData, "HorizonsRequestor", "JSONs");
+            string FilePath = Path.Combine(LocalAppData, "HorizonsRequestor", "Ephemeris");
 
-
-            string FilePath = @"C:\Users\Kaldr\Desktop\TemporaryOutputFolder\";
-
-            //string[] FullPlanetPaths = Directory.GetFiles(FilePath);
+            Directory.CreateDirectory(JSONFilePath);
 
             string[] NewPlanetFiles = Directory.GetFiles(FilePath).Select(Path.GetFileName).ToArray();
 
-            var Tokens = new List<BoundaryTokens>();
             var EphemInfo = new List<EphemInformation>();
-
-            string JSONFilePath = @"C:\Users\Kaldr\Desktop\TemporaryOutputFolder\JSONs\";
 
             string StartText = "$$SOE";
             string EndText = "$$EOE";
 
             for (int PlanetCount = 0; PlanetCount < NewPlanetFiles.Length; PlanetCount++)
             {
-                string FullFilePath = Path.Combine(FilePath + NewPlanetFiles[PlanetCount]);
+                string FullFilePath = Path.Combine(FilePath+ Path.DirectorySeparatorChar + NewPlanetFiles[PlanetCount]);
                 string[] EphemFile = File.ReadAllLines(FullFilePath);
                 bool WriteLineToggle = false;
                 string date = string.Empty;
@@ -87,7 +78,6 @@ namespace TextFileParser
                         helioLat = float.Parse(line.Substring(58, 8));
                         radiusAU = float.Parse(line.Substring(68, 14));
 
-                        //Console.WriteLine($"Date: {date} | Time: {time} | RA: {ra} | Dec: {dec} | HelioLon: {helioLon:F4} | HelioLat: {helioLat:F4} | Radius: {radiusAU:F7}");
                         EphemInfo.Add(new EphemInformation
                         {
                             Date = date,
@@ -98,13 +88,13 @@ namespace TextFileParser
                             HelioLat = helioLat,
                             RadiusAU = radiusAU,
                         });
-                        //Console.WriteLine($"Current Entries in EphemInfo: {EphemInfo.Count}");
+
                         if (EphemInfo.Count == 96) // Horizon's Ephemeris output for 24hrs at 15m intervals is always 96 lines not including 00:00 the next day.
                         {
                             var FormattedJSON = new JsonSerializerOptions { WriteIndented = true };
                             string FormattedEphemInfo = JsonSerializer.Serialize(EphemInfo, FormattedJSON);
                             string JSONRenamedFiles = Path.GetFileNameWithoutExtension(NewPlanetFiles[PlanetCount]);
-                            string FullJSONFilePath = Path.Combine(JSONFilePath + JSONRenamedFiles + ".json");
+                            string FullJSONFilePath = Path.Combine(JSONFilePath + Path.DirectorySeparatorChar + JSONRenamedFiles + ".json");
                             Console.WriteLine($"JSON for {JSONRenamedFiles} created!");
                             System.IO.File.WriteAllText(FullJSONFilePath, FormattedEphemInfo);
                         }
