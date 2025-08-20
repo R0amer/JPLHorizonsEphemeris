@@ -9,14 +9,10 @@ namespace HorizonsAutoCommiter
 {
     public class AutoCommit
     {
-        //public static string GitHubPAT = Environment.GetEnvironmentVariable("HorizonsAccessToken");
-        //private static string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        //private static string JSONFilePath = Path.Combine(LocalAppData, "HorizonsRequestor", "JSONs");
+        static void Main()
+        {
 
-        //static async Task Main()
-        //{
-        //    await GitHubUpload();
-        //}
+        }
 
         public static async Task Run()
         {
@@ -31,7 +27,6 @@ namespace HorizonsAutoCommiter
 
             var GitHubClient = new GitHubClient(new ProductHeaderValue("HorizonsAutoCommitter"));
             GitHubClient.Credentials = new Credentials(GitHubPAT);
-            //string JSONFilePath = @"C:\Program Files\HorizonsRequestor\JSONs\";
             string[] NewPlanetFiles = Directory.GetFiles(JSONFilePath).Select(Path.GetFileName).ToArray();
             string HorizonsDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)).ToString("yyyy-MM-dd");
 
