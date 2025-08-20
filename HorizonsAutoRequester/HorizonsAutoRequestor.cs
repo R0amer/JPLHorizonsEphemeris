@@ -17,7 +17,12 @@ namespace HorizonsAutoRequestor
         private static string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         private static string EphemStorage = Path.Combine(LocalAppData, "HorizonsRequestor", "Ephemeris");
         private static HttpClient HorizonClient = null;
+        public static string TxtPath = Path.Combine(LocalAppData, "HorizonsRequestor" + Path.DirectorySeparatorChar + "IDs_Planets.txt");
 
+        static void Main()
+        {
+
+        }
         public static void Run()
         {
             TxtToDictionary();
@@ -26,8 +31,6 @@ namespace HorizonsAutoRequestor
         public static void TxtToDictionary()
         {
             Dictionary<string, string> PlanetEphemID = new Dictionary<string, string>();
-
-            string TxtPath = Path.Combine(LocalAppData, "HorizonsRequestor" + Path.DirectorySeparatorChar + "IDs_Planets.txt");
 
             try
             {
@@ -65,7 +68,7 @@ namespace HorizonsAutoRequestor
 
             catch (FileNotFoundException)
             {
-                Console.WriteLine($"File not found at {TxtPath}, did you move it?");
+                Console.WriteLine($"File not found at {TxtPath}. Did you move it?");
             }
 
             CheckForEphemFiles(PlanetEphemID);
@@ -91,7 +94,6 @@ namespace HorizonsAutoRequestor
                 }
                 else
                 {
-                    //using StreamWriter sw = new StreamWriter(Path.Combine(EphemStorage, PlanetName + "_EPHEM.txt"));
                     Console.WriteLine("File for: " + PlanetName + " does not exist. Creating...");
                     HTTPRequest(PlanetCode, PlanetName, APIrequest.StartTime, APIrequest.StopTime);
                 }
