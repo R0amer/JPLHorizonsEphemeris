@@ -5,14 +5,19 @@ using TextFileParser;
 using HorizonsAutoRequestor;
 using HorizonsAutoCommiter;
 using Microsoft.VisualBasic.FileIO;
+using System.Runtime.InteropServices;
 
 namespace HorizonsOrchestrator
 {
     class OrchestratorClass
     {
+        static string LocalAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        static string HorizonsFolder = Path.Combine(LocalAppData + Path.DirectorySeparatorChar + "HorizonsRequestor");
 
         static async Task Main(string[] args)
         {
+            HorizonsDirCreate();
+            
             await CheckExist();
 
             APIrequest.Run();
@@ -27,6 +32,11 @@ namespace HorizonsOrchestrator
             {
                 await AutoCommit.Run();
             }
+        }
+
+        static void HorizonsDirCreate()
+        {
+            Directory.CreateDirectory(HorizonsFolder);
         }
 
         static async Task CheckExist()
